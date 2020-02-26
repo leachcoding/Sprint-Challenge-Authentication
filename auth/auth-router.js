@@ -14,7 +14,8 @@ router.post('/register', (req, res) => {
 
   Users.add(user)
     .then(saved => {
-      res.status(201).json(saved);
+      const token = generateToken(user);
+      res.status(201).json({payload: token});
     })
     .catch(error => {
       console.log(error);
@@ -30,7 +31,7 @@ router.post('/login', (req, res) => {
     .then(user => {
       if (user && bcrypt.compareSync(password, user.password)) {
         const token = generateToken(user);
-        res.status(200).json({token});
+        res.status(200).json({payload: token});
       } else {
         res.status(401).json({message: 'Invalid Credentials'});
       }
@@ -43,13 +44,13 @@ router.post('/login', (req, res) => {
 
 function generateToken(user) {
   const payload = {
-    username: user.username,
+    user
   };
   const options = {
     expiresIn: '1d',
   };
 
-  return jwt.sign(payload, secrets.jwtSecret, options);
+  return jwt.sign(payload, jwtSecret, options);
 };
 
 module.exports = router;
